@@ -88,7 +88,7 @@
   },
   "scripts": {
     "test": "jest",
-    "start": "nodemon server",
+    "start": "node server",
       "build": "echo 'No build necessary'"
   },
   "repository": {
