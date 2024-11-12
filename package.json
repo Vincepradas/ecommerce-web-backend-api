@@ -88,7 +88,8 @@
   },
   "scripts": {
     "test": "jest",
-    "start": "nodemon server"
+    "start": "nodemon server",
+    "build": "babel src -d dist"
   },
   "repository": {
     "type": "git",
