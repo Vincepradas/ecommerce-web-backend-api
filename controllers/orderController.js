@@ -3,6 +3,21 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const mongoose = require('mongoose');
 
+// All orders (ADMIN)
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('user', 'name email') 
+      .populate('products.productId', 'name price'); 
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
 // 1. Create Order
 exports.createOrder = async (req, res) => {
   const session = await mongoose.startSession();
@@ -73,6 +88,7 @@ exports.getOrder = async (req, res) => {
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
   } catch (error) {
+    console.error(error); 
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -80,7 +96,9 @@ exports.getOrder = async (req, res) => {
 // 3. Get all orders for a user
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).populate(
+    const orders = await Order.find({ user: req.user._id })
+    .populate('user', 'name email')
+    .populate(
       "products.productId"
     );
     if (!orders || orders.length === 0) {
@@ -89,6 +107,7 @@ exports.getUserOrders = async (req, res) => {
       res.json(orders);
     }
   } catch (error) {
+    console.error(error)
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -111,6 +130,34 @@ exports.cancelOrder = async (req, res) => {
     await Order.findByIdAndDelete(id);
 
     res.status(200).json({ message: 'Order cancelled successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// 5. Update order status
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const { status } = req.body; 
+
+    // Find the order by ID
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Validate the new status
+    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.status(200).json({ message: `Order status updated to ${status}`, order });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
