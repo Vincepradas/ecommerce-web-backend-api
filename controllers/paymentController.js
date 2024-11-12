@@ -4,14 +4,14 @@ const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 
 exports.createPaymentIntent = async (req, res) => {
   try {
-    const { amount, currency, paymentMethod } = req.body;
+    const { amount, currency } = req.body;
 
     const response = await axios.post(
       'https://api.paymongo.com/v1/payment_intents',
       {
         data: {
           attributes: {
-            amount: amount * 100, 
+            amount: amount * 100, // Amount in cents
             payment_method_allowed: ['gcash'],
             payment_method_options: { gcash: {} },
             currency: currency || 'PHP',
@@ -20,8 +20,8 @@ exports.createPaymentIntent = async (req, res) => {
       },
       {
         auth: {
-          username: PAYMONGO_SECRET_KEY,
-          password: '', 
+          username: process.env.PAYMONGO_SECRET_KEY, // Your secret key as username
+          password: '', // Empty password for Basic Auth
         },
       }
     );
@@ -29,7 +29,7 @@ exports.createPaymentIntent = async (req, res) => {
     res.status(200).json(response.data);
   } catch (error) {
     console.error('Error creating Payment Intent:', error.response?.data || error.message);
-    res.status(500).json({ message: 'Payment Intent creation failed' });
+    res.status(500).json({ message: 'Payment Intent creation failed', error: error.response?.data || error.message });
   }
 };
 

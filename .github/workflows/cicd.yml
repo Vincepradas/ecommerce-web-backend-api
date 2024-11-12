@@ -1,0 +1,30 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+        
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v2
+        with:
+            app-name: ecomwebapi
+            publish-profile: ${{ secrets.azure_webapp_publish_profile }}
