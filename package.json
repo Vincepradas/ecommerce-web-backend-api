@@ -6,6 +6,7 @@
   "dependencies": {
     "accepts": "^1.3.8",
     "array-flatten": "^1.1.1",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "bson": "^6.9.0",
     "bytes": "^3.1.2",
@@ -40,6 +41,7 @@
     "iconv-lite": "^0.4.24",
     "inherits": "^2.0.4",
     "ipaddr.js": "^1.9.1",
+    "jsonwebtoken": "^9.0.2",
     "kareem": "^2.6.3",
     "media-typer": "^0.3.0",
     "memory-pager": "^1.5.0",
@@ -83,9 +85,9 @@
     "webidl-conversions": "^7.0.0",
     "whatwg-url": "^13.0.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "nodemon server"
   },
   "repository": {
     "type": "git",
