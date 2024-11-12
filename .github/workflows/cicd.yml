@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
@@ -27,4 +27,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
             app-name: ecomwebapi
-            publish-profile: ${{ secrets.azure_webapp_publish_profile }}
+            publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+            package: .
