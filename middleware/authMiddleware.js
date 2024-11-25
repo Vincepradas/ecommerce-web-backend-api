@@ -28,4 +28,34 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+// In authMiddleware.js (or the relevant file)
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name && !email && !password) {
+      return res.status(400).json({ message: 'No update fields provided' });
+    }
+
+    const user = req.user; // Assuming `req.user` is populated by authMiddleware
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    // Update fields only if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) {
+      const bcrypt = require('bcrypt');
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save(); // Save updated user to DB
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = [ authMiddleware, updateProfile ];
