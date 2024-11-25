@@ -18,7 +18,6 @@ exports.getAllOrders = async (req, res) => {
 };
 
 
-// 1. Create Order
 exports.createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -47,7 +46,11 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
       }
 
-      totalAmount += product.price * item.quantity;
+      // Calculate discounted price
+      const discount = product.discountPercentage || 0; // Default to 0 if no discount
+      const discountedPrice = product.price - (product.price * (discount / 100));
+
+      totalAmount += discountedPrice * item.quantity;
 
       // Update the stock locally and push the operation for batch processing
       product.stock -= item.quantity;
@@ -73,10 +76,11 @@ exports.createOrder = async (req, res) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.error(error); 
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 // 2. Get a single order by ID
