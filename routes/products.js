@@ -13,6 +13,7 @@ const {
 const authMiddleware = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 
+
 const router = express.Router();
 
 // Product routes

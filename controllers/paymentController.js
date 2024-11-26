@@ -20,8 +20,8 @@ exports.createPaymentIntent = async (req, res) => {
       },
       {
         auth: {
-          username: process.env.PAYMONGO_SECRET_KEY, // Your secret key as username
-          password: '', // Empty password for Basic Auth
+          username: process.env.PAYMONGO_SECRET_KEY,
+          password: '',
         },
       }
     );

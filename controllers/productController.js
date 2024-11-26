@@ -1,5 +1,35 @@
-
 const Product = require('../models/Product');
+const AWS = require('aws-sdk');
+const fs = require('fs');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+
+// AWS S3 Configuration
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+s3.listBuckets((err, data) => {
+  if (err) {
+    console.error('Error listing buckets:', err);
+  } else {
+    console.log('Buckets:', data.Buckets);
+  }
+});
+
+// Multer S3 configuration for handling multiple media files
+const upload = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    acl: 'public-read',
+    key: (req, file, cb) => {
+      cb(null, `products/${Date.now()}_${file.originalname}`);
+    },
+  }),
+}).array('media'); // Handle multiple files using `array`
 
 // 1. Get all products
 exports.getAllProducts = async (req, res) => {
@@ -32,8 +62,8 @@ exports.searchProductsByName = async (req, res) => {
       return res.status(400).json({ message: 'Product name query is required' });
     }
 
-    const products = await Product.find({ 
-      name: { $regex: name, $options: 'i' } 
+    const products = await Product.find({
+      name: { $regex: name, $options: 'i' }
     });
 
     res.json(products);
@@ -45,12 +75,44 @@ exports.searchProductsByName = async (req, res) => {
 // 5. Create a new product
 exports.addProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, category, discountPercentage, tags, weight, rating, reviews } = req.body;
-    const newProduct = new Product({ name, description, price, stock, category, discountPercentage, tags, weight, rating, reviews });
-    console.log(req.body);
-    await newProduct.save();
-    res.status(201).json(newProduct);
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ message: 'Error uploading media', error: err.message });
+      }
+
+      // Extract product details from request body
+      const { name, description, price, stock, category, discountPercentage, tags, weight, rating, reviews } = req.body;
+
+      let media = [];
+      if (req.files && req.files.length > 0) {
+        // Add uploaded media info to the product
+        media = req.files.map(file => ({
+          url: file.location,
+          key: file.key,
+        }));
+      }
+
+      // Create the product with media
+      const newProduct = new Product({
+        name,
+        description,
+        price,
+        stock,
+        category,
+        discountPercentage,
+        tags,
+        weight,
+        rating,
+        reviews,
+        media: media, // Add the media array
+      });
+
+      await newProduct.save();
+
+      res.status(201).json({ message: 'Product created successfully!', product: newProduct });
+    });
   } catch (error) {
+    console.error('Error adding product:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -59,12 +121,21 @@ exports.addProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { name, description, price, stock } = req.body;
+
+    if (!name && !description && !price && !stock) {
+      return res.status(400).json({ message: 'No update fields provided' });
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      { name, description, price, stock },
-      { new: true }
+        req.params.id,
+        { name, description, price, stock },
+        { new: true }
     );
-    if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
     res.json(updatedProduct);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -82,7 +153,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-//8. Add a review to a product
+// 8. Add a review to a product
 exports.addReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -107,7 +178,7 @@ exports.addReview = async (req, res) => {
   }
 };
 
-//9. Update a review
+// 9. Update a review
 exports.updateReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -136,7 +207,7 @@ exports.updateReview = async (req, res) => {
   }
 };
 
-//10. Delete a review
+// 10. Delete a review
 exports.deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -165,5 +236,3 @@ exports.deleteReview = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-
