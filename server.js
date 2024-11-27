@@ -14,7 +14,7 @@ connectDB();
 // CORS configuration
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production'
-        ? 'https://yourfrontenddomain.com'  // Production frontend URL
+        ? 'https://ecommerce-web-frontend-seven.vercel.app'  // Production frontend URL
         : 'http://localhost:3000',          // Development frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
@@ -22,6 +22,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
