@@ -13,7 +13,7 @@ connectDB();
 
 // CORS configuration
 const corsOptions = {
-    origin: 'https://ecommerce-web-frontend-seven.vercel.app',      // Development frontend URL
+    origin: '*',      // Development frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
     credentials: true,  // Allow credentials (cookies, HTTP authentication, etc.)
