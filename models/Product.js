@@ -7,6 +7,13 @@ const MediaSchema = new mongoose.Schema({
   uploadedAt: { type: Date, default: Date.now },
 });
 
+//Thumbnail schema
+const Thumbnail = new mongoose.Schema({
+    url: { type: String, required: true },
+    key: { type: String, required: true },
+    uploadedAt: { type: Date, default: Date.now },
+});
+
 // Product schema
 const productSchema = new mongoose.Schema(
     {
@@ -28,7 +35,8 @@ const productSchema = new mongoose.Schema(
           reviewerEmail: { type: String, required: true },
         },
       ],
-      media: [MediaSchema],
+        media: [MediaSchema],
+        thumbnail: Thumbnail
     },
     { timestamps: true }
 );
