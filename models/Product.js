@@ -28,11 +28,11 @@ const productSchema = new mongoose.Schema(
       rating: { type: Number, default: 0 },
       reviews: [
         {
-          rating: { type: Number, required: true, min: 1, max: 5 },
-          comment: { type: String, required: true },
+          rating: { type: Number, required: false, min: 1, max: 5 },
+          comment: { type: String, required: false },
           date: { type: Date, default: () => new Date() },
-          reviewerName: { type: String, required: true },
-          reviewerEmail: { type: String, required: true },
+          reviewerName: { type: String, required: false },
+          reviewerEmail: { type: String, required: false },
         },
       ],
         media: [MediaSchema],
