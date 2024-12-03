@@ -19,7 +19,7 @@ app.use(cookieParser());
 
 // CORS configuration (make sure to replace '*' with actual front-end URL in production)
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || '*', // Use an environment variable for the frontend URL
+    origin: '*' || process.env.FRONTEND_URL, // Use an environment variable for the frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Allow credentials
