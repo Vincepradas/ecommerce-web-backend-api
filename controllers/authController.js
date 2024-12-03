@@ -3,6 +3,31 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Get Session
+exports.getSession = async (req, res) => {
+  try {
+    // Retrieve the token from cookies
+    const token = req.cookies.authToken;
+    if (!token) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Fetch user details (excluding sensitive data like password)
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 // Customer Signup (default role: customer)
 exports.customerSignup = async (req, res) => {
   try {
@@ -57,6 +82,30 @@ exports.adminSignup = async (req, res) => {
   }
 };
 
+//LOGIN
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//
+//     const user = await User.findOne({ email });
+//     if (!user || !(await bcrypt.compare(password, user.password))) {
+//       return res.status(400).json({ message: 'Invalid credentials' });
+//     }
+//
+//     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+//
+//     // Send the token as an HTTP-only cookie
+//     res.cookie('authToken', token, {
+//           httpOnly: true,
+//           secure: process.env.NODE_ENV === 'production',
+//           maxAge: 1000 * 60 * 60, // 1 hour
+//         })
+//         .json({ message: 'Login successful', role: user.role });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -71,4 +120,9 @@ exports.login = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie('authToken');
+  res.json({ message: 'Logged out successfully' });
 };

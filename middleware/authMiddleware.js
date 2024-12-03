@@ -1,16 +1,7 @@
-
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-
 const authMiddleware = async (req, res, next) => {
-  const authHeader = req.header('Authorization');
-  if (!authHeader) {
-    return res.status(401).json({ message: 'Authorization header missing' });
-  }
-
-  const token = authHeader.split(' ')[1];
+  const token = req.cookies.authToken; // Read token from cookies
   if (!token) {
-    return res.status(401).json({ message: 'Token missing' });
+    return res.status(401).json({ message: 'Authentication token missing' });
   }
 
   try {
@@ -20,7 +11,7 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    req.user = user; 
+    req.user = user;
     next();
   } catch (error) {
     res.status(403).json({ message: 'Invalid token' });
