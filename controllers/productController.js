@@ -180,26 +180,45 @@
   exports.addReview = async (req, res) => {
     try {
       const { id } = req.params;
-      const { rating, comment, reviewerName, reviewerEmail } = req.body;
+      const { rating, comment } = req.body;
 
-      if (!rating || !comment || !reviewerName || !reviewerEmail) {
-        return res.status(400).json({ message: 'All review fields are required' });
+      // Ensure that rating and comment are provided
+      if (!rating || !comment) {
+        return res.status(400).json({ message: 'Both rating and comment are required' });
       }
 
+      // Fetch the product
       const product = await Product.findById(id);
-      if (!product) return res.status(404).json({ message: 'Product not found' });
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
 
-      product.reviews.push({ rating, comment, reviewerName, reviewerEmail });
+      // Add the review with user information (from req.user)
+      const newReview = {
+        rating,
+        comment,
+        reviewerName: req.user.name, // Name from the authenticated user
+        reviewerEmail: req.user.email, // Email from the authenticated user
+      };
 
+      // Push the new review to the product's reviews array
+      product.reviews.push(newReview);
+
+      // Calculate the new average rating
       const totalRating = product.reviews.reduce((sum, review) => sum + review.rating, 0);
       product.rating = (totalRating / product.reviews.length).toFixed(1);
 
+      // Save the updated product
       await product.save();
+
+      // Return a success response
       res.status(201).json({ message: 'Review added successfully', product });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ message: 'Server error' });
     }
   };
+
 
   // 9. Update a review
   exports.updateReview = async (req, res) => {
