@@ -7,7 +7,7 @@ const User = require('../models/User');
 exports.getSession = async (req, res) => {
   try {
     // Retrieve the token from cookies
-    const token = req.cookies.authToken;
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies.authToken;
     if (!token) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
