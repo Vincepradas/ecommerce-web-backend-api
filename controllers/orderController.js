@@ -1,4 +1,3 @@
-
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const mongoose = require('mongoose');
@@ -7,8 +6,8 @@ const mongoose = require('mongoose');
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate('user', 'name email') 
-      .populate('products.productId', 'name price'); 
+      .populate('user', 'name email')
+      .populate('products.productId', 'name price');
 
     res.status(200).json(orders);
   } catch (error) {
@@ -17,16 +16,21 @@ exports.getAllOrders = async (req, res) => {
   }
 };
 
-
-//create order
+// Create order
 exports.createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const { products } = req.body;
+    const { products, paymentMethod, address } = req.body;
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ message: "Products are required and should be a non-empty array" });
+    }
+    if (!paymentMethod) {
+      return res.status(400).json({ message: "Payment method is required" });
+    }
+    if (!address) {
+      return res.status(400).json({ message: "Address is required" });
     }
 
     let totalAmount = 0;
@@ -66,6 +70,8 @@ exports.createOrder = async (req, res) => {
       user: req.user._id,
       products,
       totalAmount,
+      paymentMethod,
+      address,
     });
 
     await order.save({ session });
@@ -82,9 +88,7 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-
-
-// 2. Get a single order by ID
+// Get a single order by ID
 exports.getOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate(
@@ -93,32 +97,29 @@ exports.getOrder = async (req, res) => {
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
   } catch (error) {
-    console.error(error); 
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// 3. Get all orders for a user
+// Get all orders for a user
 exports.getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })
-    .populate('user', 'name email')
-    .populate(
-      "products.productId"
-    );
+      .populate('user', 'name email')
+      .populate("products.productId");
     if (!orders || orders.length === 0) {
-      return res.status(300).json({message: "No orders found"});
+      return res.status(300).json({ message: "No orders found" });
     } else {
       res.json(orders);
     }
   } catch (error) {
-    console.error(error)
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// 4. Cancel/Delete order
-
+// Cancel/Delete order
 exports.cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,11 +142,11 @@ exports.cancelOrder = async (req, res) => {
   }
 };
 
-// 5. Update order status
+// Update order status
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const { status } = req.body; 
+    const { id } = req.params;
+    const { status } = req.body;
 
     // Find the order by ID
     const order = await Order.findById(id);
@@ -154,7 +155,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     // Validate the new status
-    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = ['pending', 'completed', 'shipped', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
