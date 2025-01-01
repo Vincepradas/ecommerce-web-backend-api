@@ -9,7 +9,27 @@ exports.getAllOrders = async (req, res) => {
       .populate('user', 'name email')
       .populate('products.productId', 'name price');
 
-    res.status(200).json(orders);
+    const orderResponse = orders.map(order => ({
+      id: order._id,
+      user: {
+        name: order.user.name,
+        email: order.user.email
+      },
+      products: order.products.map(product => ({
+        productId: product.productId._id,
+        name: product.productId.name,
+        price: product.productId.price,
+        quantity: product.quantity
+      })),
+      totalAmount: order.totalAmount,
+      paymentMethod: order.paymentMethod,
+      address: order.address,
+      status: order.status,
+      createdAt: order.createdAt,
+      isCanceled: order.isCanceled
+    }));
+
+    res.status(200).json(orderResponse);
   } catch (error) {
     console.error('Error fetching orders:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -22,15 +42,15 @@ exports.createOrder = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { products, paymentMethod, shippingAddress } = req.body;
+    const { products, paymentMethod, address } = req.body;
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ message: "Products are required and should be a non-empty array" });
     }
     if (!paymentMethod) {
       return res.status(400).json({ message: "Payment method is required" });
     }
-    if (!shippingAddress || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip || !shippingAddress.country) {
-      return res.status(400).json({ message: "Shipping address is required" });
+    if (!address) {
+      return res.status(400).json({ message: "Address is required" });
     }
 
     let totalAmount = 0;
@@ -69,7 +89,7 @@ exports.createOrder = async (req, res) => {
     const order = new Order({
       user: req.user._id,
       paymentMethod,
-      shippingAddress,
+      address,
       products: products.map(item => ({
         productId: item.productId,
         productName: item.productName,
@@ -89,20 +109,7 @@ exports.createOrder = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    // Return the created order in the new JSON format
-    const orderResponse = {
-      user: order.user,
-      paymentMethod: order.paymentMethod,
-      shippingAddress: order.shippingAddress,
-      products: order.products,
-      totalAmount: order.totalAmount,
-      status: order.status,
-      shippingStatus: order.shippingStatus,
-      orderDate: order.orderDate,
-      isCanceled: order.isCanceled
-    };
-
-    res.status(201).json(orderResponse);
+    res.status(201).json(order);
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
