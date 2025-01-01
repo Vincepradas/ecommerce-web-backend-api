@@ -22,15 +22,15 @@ exports.createOrder = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { products, paymentMethod, address } = req.body;
+    const { products, paymentMethod, shippingAddress } = req.body;
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ message: "Products are required and should be a non-empty array" });
     }
     if (!paymentMethod) {
       return res.status(400).json({ message: "Payment method is required" });
     }
-    if (!address) {
-      return res.status(400).json({ message: "Address is required" });
+    if (!shippingAddress || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip || !shippingAddress.country) {
+      return res.status(400).json({ message: "Shipping address is required" });
     }
 
     let totalAmount = 0;
@@ -68,10 +68,20 @@ exports.createOrder = async (req, res) => {
     // Create and save the new order
     const order = new Order({
       user: req.user._id,
-      products,
-      totalAmount,
       paymentMethod,
-      address,
+      shippingAddress,
+      products: products.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+        totalPrice: item.quantity * item.price
+      })),
+      totalAmount,
+      status: 'pending',
+      shippingStatus: 'Not Shipped',
+      orderDate: Date.now(),
+      isCanceled: false
     });
 
     await order.save({ session });
@@ -79,7 +89,20 @@ exports.createOrder = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json(order);
+    // Return the created order in the new JSON format
+    const orderResponse = {
+      user: order.user,
+      paymentMethod: order.paymentMethod,
+      shippingAddress: order.shippingAddress,
+      products: order.products,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      shippingStatus: order.shippingStatus,
+      orderDate: order.orderDate,
+      isCanceled: order.isCanceled
+    };
+
+    res.status(201).json(orderResponse);
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -91,9 +114,7 @@ exports.createOrder = async (req, res) => {
 // Get a single order by ID
 exports.getOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate(
-      "products.productId"
-    );
+    const order = await Order.findById(req.params.id).populate("products.productId");
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
   } catch (error) {
