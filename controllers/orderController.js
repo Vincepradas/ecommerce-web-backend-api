@@ -133,14 +133,31 @@ exports.getOrder = async (req, res) => {
 // Get all orders for a user
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id })
+    const orders = await Order.find()
       .populate('user', 'name email')
-      .populate("products.productId");
-    if (!orders || orders.length === 0) {
-      return res.status(300).json({ message: "No orders found" });
-    } else {
-      res.json(orders);
-    }
+      .populate('products.productId', 'name price');
+
+    const orderResponse = orders.map(order => ({
+      id: order._id,
+      user: {
+        name: order.user.name,
+        email: order.user.email
+      },
+      products: order.products.map(product => ({
+        productId: product.productId._id,
+        name: product.productId.name,
+        price: product.productId.price,
+        quantity: product.quantity
+      })),
+      totalAmount: order.totalAmount,
+      paymentMethod: order.paymentMethod,
+      address: order.address,
+      status: order.status,
+      createdAt: order.createdAt,
+      isCanceled: order.isCanceled
+    }));
+
+    res.status(200).json(orderResponse);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
