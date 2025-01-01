@@ -82,30 +82,6 @@ exports.adminSignup = async (req, res) => {
   }
 };
 
-//LOGIN
-// exports.login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//
-//     const user = await User.findOne({ email });
-//     if (!user || !(await bcrypt.compare(password, user.password))) {
-//       return res.status(400).json({ message: 'Invalid credentials' });
-//     }
-//
-//     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-//
-//     // Send the token as an HTTP-only cookie
-//     res.cookie('authToken', token, {
-//           httpOnly: true,
-//           secure: process.env.NODE_ENV === 'production',
-//           maxAge: 1000 * 60 * 60, // 1 hour
-//         })
-//         .json({ message: 'Login successful', role: user.role });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
-
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
