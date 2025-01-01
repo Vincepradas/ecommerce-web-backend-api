@@ -11,12 +11,10 @@ const orderSchema = new mongoose.Schema({
     required: true,
     enum: ['Cash on Delivery', 'GCash', 'PayMaya'] // Include other payment methods as needed
   },
-  shippingAddress: {
-    address: {
+  address: {
       type: String,
       required: true
     },
-  },
   products: [
     {
       productId: {
