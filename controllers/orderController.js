@@ -214,3 +214,71 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Direct Checkout
+exports.directCheckout = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { productId, quantity, paymentMethod, address } = req.body;
+
+    if (!productId || !quantity || !paymentMethod || !address) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Fetch the product to check availability
+    const product = await Product.findById(productId).session(session);
+    if (!product) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.stock < quantity) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: "Insufficient stock" });
+    }
+
+    // Calculate total price after discount
+    const discount = product.discountPercentage || 0;
+    const discountedPrice = product.price - (product.price * (discount / 100));
+    const totalAmount = discountedPrice * quantity;
+
+    // Update stock
+    product.stock -= quantity;
+    await product.save({ session });
+
+    // Create order
+    const order = new Order({
+      user: req.user._id,
+      paymentMethod,
+      address,
+      products: [{
+        productId,
+        productName: product.name,
+        quantity,
+        price: discountedPrice,
+        totalPrice: totalAmount
+      }],
+      totalAmount,
+      status: 'pending',
+      shippingStatus: 'Not Shipped',
+      orderDate: Date.now(),
+      isCanceled: false
+    });
+
+    await order.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(201).json(order);
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
