@@ -9,7 +9,7 @@ const isvendor = require('../middleware/isVendor');
 const router = express.Router();
 
 // Vendor Product routes
-router.get('/products', authMiddleware, isvendor, getvenProducts);
+router.get('/products', getvenProducts);
 router.post('/', authMiddleware, isvendor, venAddProduct);
 
 module.exports = router;
