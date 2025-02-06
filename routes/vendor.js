@@ -12,7 +12,7 @@ const router = express.Router();
 
 // Vendor Product routes
 router.get('/products', getvenProducts);
-router.post('/', isvendor, venAddProduct);
+router.post('/', venAddProduct);
 router.put('/:id', authMiddleware, updateProduct);
 router.delete('/:id', authMiddleware, deleteProduct);
 
