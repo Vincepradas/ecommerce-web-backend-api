@@ -114,3 +114,37 @@ exports.venAddProduct = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+ exports.updateProduct = async (req, res) => {
+  try {
+    const { name, description, price, stock } = req.body;
+
+    if (!name && !description && !price && !stock) {
+      return res.status(400).json({ message: 'No update fields provided' });
+    }
+
+    const updatedProduct = await VendorProduct.findByIdAndUpdate(
+        req.params.id,
+        { name, description, price, stock },
+        { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+  exports.deleteProduct = async (req, res) => {
+    try {
+      const deletedProduct = await VendorProduct.findByIdAndDelete(req.params.id);
+      if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
+      res.json({ message: 'Product deleted successfully' });
+    } catch (error) {       
+      res.status(500).json({ message: 'Server error' });
+    }
+  }; 
