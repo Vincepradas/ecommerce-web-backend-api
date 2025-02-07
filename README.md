@@ -3,7 +3,7 @@
 
 # E-commerce API
 
-An API for an e-commerce platform built with Node.js, Express, MongoDB, and GCash payment integration.
+An API for an e-commerce platform I built with Node.js, Express, MongoDB, and GCash payment integration for my mom's small business.
 
 ## Table of Contents
 - [Features](#features)
