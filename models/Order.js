@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: true,
-    enum: ['Cash on Delivery', 'GCash', 'PayMaya'] // Include other payment methods as needed
+    enum: ['Cash on Delivery', 'GCash', 'PayMaya'] 
   },
   address: {
       type: String,
