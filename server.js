@@ -23,18 +23,17 @@ const corsOptions = {
     origin: '*' || process.env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allow credentials
+    credentials: true,
 };
 
 app.use(cors(corsOptions));
 
-// Session management (secure in production, HTTP in development)
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // Secure cookie in production only
+        secure: process.env.NODE_ENV === 'production', 
         httpOnly: true,
     },
 }));

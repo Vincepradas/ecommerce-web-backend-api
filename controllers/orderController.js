@@ -130,10 +130,11 @@ exports.getOrder = async (req, res) => {
   }
 };
 
-// Get all orders for a user
+
+// Get all orders for the CURRENT USER only
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+    const orders = await Order.find({ user: req.user._id }) 
       .populate('user', 'name email')
       .populate('products.productId', 'name price');
 
