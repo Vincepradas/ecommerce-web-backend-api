@@ -1,38 +1,38 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // All orders (ADMIN)
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate('user', 'name email')
-      .populate('products.productId', 'name price');
+      .populate("user", "name email")
+      .populate("products.productId", "name price");
 
-    const orderResponse = orders.map(order => ({
+    const orderResponse = orders.map((order) => ({
       id: order._id,
       user: {
         name: order.user.name,
-        email: order.user.email
+        email: order.user.email,
       },
-      products: order.products.map(product => ({
+      products: order.products.map((product) => ({
         productId: product.productId._id,
         name: product.productId.name,
         price: product.productId.price,
-        quantity: product.quantity
+        quantity: product.quantity,
       })),
       totalAmount: order.totalAmount,
       paymentMethod: order.paymentMethod,
       address: order.address,
       status: order.status,
       createdAt: order.createdAt,
-      isCanceled: order.isCanceled
+      isCanceled: order.isCanceled,
     }));
 
     res.status(200).json(orderResponse);
   } catch (error) {
-    console.error('Error fetching orders:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -44,7 +44,11 @@ exports.createOrder = async (req, res) => {
   try {
     const { products, paymentMethod, address } = req.body;
     if (!products || !Array.isArray(products) || products.length === 0) {
-      return res.status(400).json({ message: "Products are required and should be a non-empty array" });
+      return res
+        .status(400)
+        .json({
+          message: "Products are required and should be a non-empty array",
+        });
     }
     if (!paymentMethod) {
       return res.status(400).json({ message: "Payment method is required" });
@@ -62,18 +66,22 @@ exports.createOrder = async (req, res) => {
       if (!product) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(404).json({ message: `Product with ID ${item.productId} not found` });
+        return res
+          .status(404)
+          .json({ message: `Product with ID ${item.productId} not found` });
       }
 
       if (product.stock < item.quantity) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
+        return res
+          .status(400)
+          .json({ message: `Insufficient stock for ${product.name}` });
       }
 
       // Calculate discounted price
       const discount = product.discountPercentage || 0; // Default to 0 if no discount
-      const discountedPrice = product.price - (product.price * (discount / 100));
+      const discountedPrice = product.price - product.price * (discount / 100);
 
       totalAmount += discountedPrice * item.quantity;
 
@@ -90,18 +98,18 @@ exports.createOrder = async (req, res) => {
       user: req.user._id,
       paymentMethod,
       address,
-      products: products.map(item => ({
+      products: products.map((item) => ({
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
         price: item.price,
-        totalPrice: item.quantity * item.price
+        totalPrice: item.quantity * item.price,
       })),
       totalAmount,
-      status: 'pending',
-      shippingStatus: 'Not Shipped',
+      status: "pending",
+      shippingStatus: "Not Shipped",
       orderDate: Date.now(),
-      isCanceled: false
+      isCanceled: false,
     });
 
     await order.save({ session });
@@ -121,7 +129,9 @@ exports.createOrder = async (req, res) => {
 // Get a single order by ID
 exports.getOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate("products.productId");
+    const order = await Order.findById(req.params.id).populate(
+      "products.productId"
+    );
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
   } catch (error) {
@@ -130,13 +140,12 @@ exports.getOrder = async (req, res) => {
   }
 };
 
-
 // Get all orders for the CURRENT USER only
 exports.getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }) 
       .populate('user', 'name email')
-      .populate('products.productId', 'name price');
+      .populate('products.productId', 'name price thumbnail'); // <-- include thumbnail
 
     const orderResponse = orders.map(order => ({
       id: order._id,
@@ -148,7 +157,8 @@ exports.getUserOrders = async (req, res) => {
         productId: product.productId._id,
         name: product.productId.name,
         price: product.productId.price,
-        quantity: product.quantity
+        quantity: product.quantity,
+        thumbnail: product.productId.thumbnail?.url || null // <-- include thumbnail URL
       })),
       totalAmount: order.totalAmount,
       paymentMethod: order.paymentMethod,
@@ -165,6 +175,7 @@ exports.getUserOrders = async (req, res) => {
   }
 };
 
+
 // Cancel/Delete order
 exports.cancelOrder = async (req, res) => {
   try {
@@ -172,19 +183,21 @@ exports.cancelOrder = async (req, res) => {
     const order = await Order.findById(id);
 
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
 
     if (order.user.toString() !== req.user._id) {
-      return res.status(403).json({ message: 'You are not authorized to cancel this order' });
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to cancel this order" });
     }
 
     await Order.findByIdAndDelete(id);
 
-    res.status(200).json({ message: 'Order cancelled successfully' });
+    res.status(200).json({ message: "Order cancelled successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -197,22 +210,24 @@ exports.updateOrderStatus = async (req, res) => {
     // Find the order by ID
     const order = await Order.findById(id);
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
 
     // Validate the new status
-    const validStatuses = ['pending', 'completed', 'shipped', 'cancelled'];
+    const validStatuses = ["pending", "completed", "shipped", "cancelled"];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: 'Invalid status' });
+      return res.status(400).json({ message: "Invalid status" });
     }
 
     order.status = status;
     await order.save();
 
-    res.status(200).json({ message: `Order status updated to ${status}`, order });
+    res
+      .status(200)
+      .json({ message: `Order status updated to ${status}`, order });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -244,7 +259,7 @@ exports.directCheckout = async (req, res) => {
 
     // Calculate total price after discount
     const discount = product.discountPercentage || 0;
-    const discountedPrice = product.price - (product.price * (discount / 100));
+    const discountedPrice = product.price - product.price * (discount / 100);
     const totalAmount = discountedPrice * quantity;
 
     // Update stock
@@ -256,18 +271,20 @@ exports.directCheckout = async (req, res) => {
       user: req.user._id,
       paymentMethod,
       address,
-      products: [{
-        productId,
-        productName: product.name,
-        quantity,
-        price: discountedPrice,
-        totalPrice: totalAmount
-      }],
+      products: [
+        {
+          productId,
+          productName: product.name,
+          quantity,
+          price: discountedPrice,
+          totalPrice: totalAmount,
+        },
+      ],
       totalAmount,
-      status: 'pending',
-      shippingStatus: 'Not Shipped',
+      status: "pending",
+      shippingStatus: "Not Shipped",
       orderDate: Date.now(),
-      isCanceled: false
+      isCanceled: false,
     });
 
     await order.save({ session });
