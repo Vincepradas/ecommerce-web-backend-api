@@ -43,9 +43,18 @@ exports.getProducts = async (req, res) => {
     const { id, name } = req.query;
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies.authToken;
-    const userId = jwt.verify(token, process.env.JWT_SECRET).userId;
 
-    //get by id
+    let userId = null;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded?.userId || null;
+      } catch (err) {
+        console.warn("Invalid JWT provided to getProducts:", err.message);
+        userId = null;
+      }
+    }
+
     if (id) {
       const product = await Product.findByIdAndUpdate(
         id,
@@ -85,7 +94,6 @@ exports.getProducts = async (req, res) => {
       return res.json(product);
     }
 
-    //search by name
     if (name) {
       const products = await Product.find({
         name: { $regex: name, $options: "i" },

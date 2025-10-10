@@ -113,6 +113,7 @@
   },
   "homepage": "https://github.com/VincePradas/ecommerce-web-backend#readme",
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.12"
   }
 }
