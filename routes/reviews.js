@@ -9,6 +9,6 @@ router.get("/product/:productId", getReviewsByProduct);
 router.get("/user/:userId", getReviewsByUser);
 router.get("/:id", getReviewById);
 
-router.post('/add', authMiddleware, addReview);
+router.post('/add', authMiddleware, addReview); 
 
-module.exports = router;
+module.exports = router;    

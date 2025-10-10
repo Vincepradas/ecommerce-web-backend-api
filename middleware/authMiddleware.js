@@ -8,8 +8,6 @@ const authMiddleware = async (req, res, next) => {
     return res.status(401).json({ message: 'Authentication token missing' });
   }
 
-  console.log("Token from header or cookie:", token);  // Debugging line
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId);
@@ -20,8 +18,9 @@ const authMiddleware = async (req, res, next) => {
 
     req.user = user;
     next();
+    return user;
   } catch (error) {
-    console.error("Error verifying token:", error);  // Debugging line
+    console.error("Error verifying token:", error); 
     res.status(403).json({ message: 'Invalid token' });
   }
 };

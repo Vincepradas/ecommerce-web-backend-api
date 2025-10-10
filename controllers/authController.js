@@ -2,20 +2,16 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// Get Session
 exports.getSession = async (req, res) => {
   try {
-    // Retrieve the token from cookies
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies.authToken;
     if (!token) {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Fetch user details (excluding sensitive data like password)
     const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -27,18 +23,15 @@ exports.getSession = async (req, res) => {
   }
 };
 
-// Customer Signup (default role: customer)
 exports.customerSignup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash the password and create the user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       name,
@@ -48,7 +41,6 @@ exports.customerSignup = async (req, res) => {
     });
     await user.save();
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -63,18 +55,15 @@ exports.customerSignup = async (req, res) => {
   }
 };
 
-// Admin Signup (role: admin) - This should be restricted
 exports.adminSignup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash the password and create the user with admin role
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       name,
@@ -84,7 +73,6 @@ exports.adminSignup = async (req, res) => {
     });
     await user.save();
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -122,12 +110,10 @@ exports.logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-// Vendor Signup (role: vendor) - This should be restricted
 exports.vendorSignup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });

@@ -2,6 +2,9 @@ const Product = require("../models/Product");
 const AWS = require("aws-sdk");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -38,6 +41,9 @@ const upload = multer({
 exports.getProducts = async (req, res) => {
   try {
     const { id, name } = req.query;
+    const token =
+      req.headers.authorization?.split(" ")[1] || req.cookies.authToken;
+    const userId = jwt.verify(token, process.env.JWT_SECRET).userId;
 
     //get by id
     if (id) {
@@ -46,14 +52,43 @@ exports.getProducts = async (req, res) => {
         { $inc: { viewCount: 1 } },
         { new: true }
       );
-      if (!product) return res.status(404).json({ message: "Product not found" });
+
+      if (userId) {
+        const user = await User.findById(userId);
+
+        const viewedIndex = user.viewedProducts.findIndex(
+          (item) => item.productId.toString() === id
+        );
+
+        if (viewedIndex >= 0) {
+          await User.updateOne(
+            { _id: userId, "viewedProducts.productId": id },
+            {
+              $inc: { "viewedProducts.$.productViewCount": 1 },
+              $set: { "viewedProducts.$.viewedAt": new Date() },
+            }
+          );
+        } else {
+          await User.findByIdAndUpdate(userId, {
+            $push: {
+              viewedProducts: {
+                productId: new mongoose.Types.ObjectId(id),
+                productViewCount: 1,
+              },
+            },
+          });
+        }
+      }
+
+      if (!product)
+        return res.status(404).json({ message: "Product not found" });
       return res.json(product);
     }
 
     //search by name
     if (name) {
       const products = await Product.find({
-        name: { $regex: name, $options: 'i' },
+        name: { $regex: name, $options: "i" },
       });
       return res.json(products);
     }
@@ -65,7 +100,6 @@ exports.getProducts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.addProduct = async (req, res) => {
   try {
@@ -128,12 +162,10 @@ exports.addProduct = async (req, res) => {
 
       await newProduct.save();
 
-      res
-        .status(201)
-        .json({
-          message: "Product created successfully!",
-          product: newProduct,
-        });
+      res.status(201).json({
+        message: "Product created successfully!",
+        product: newProduct,
+      });
     });
   } catch (error) {
     console.error("Error adding product:", error);
@@ -171,115 +203,6 @@ exports.deleteProduct = async (req, res) => {
     if (!deletedProduct)
       return res.status(404).json({ message: "Product not found" });
     res.json({ message: "Product deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-exports.addReview = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rating, comment } = req.body;
-
-    if (!rating || !comment) {
-      return res
-        .status(400)
-        .json({ message: "Both rating and comment are required" });
-    }
-
-    const product = await Product.findById(id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    const newReview = {
-      rating,
-      comment,
-      reviewerName: req.user.name,
-      reviewerEmail: req.user.email,
-    };
-
-    product.reviews.push(newReview);
-
-    const totalRating = product.reviews.reduce(
-      (sum, review) => sum + review.rating,
-      0
-    );
-    product.rating = (totalRating / product.reviews.length).toFixed(1);
-
-    await product.save();
-
-    res.status(201).json({ message: "Review added successfully", product });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-exports.updateReview = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reviewId, rating, comment } = req.body;
-
-    if (!reviewId || !rating || !comment) {
-      return res
-        .status(400)
-        .json({ message: "Review ID, rating, and comment are required" });
-    }
-
-    const product = await Product.findById(id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    const review = product.reviews.id(reviewId);
-    if (!review) return res.status(404).json({ message: "Review not found" });
-
-    review.rating = rating;
-    review.comment = comment;
-
-    const totalRating = product.reviews.reduce(
-      (sum, review) => sum + review.rating,
-      0
-    );
-    product.rating = (totalRating / product.reviews.length).toFixed(1);
-
-    await product.save();
-    res.json({ message: "Review updated successfully", product });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-exports.deleteReview = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reviewId } = req.body;
-
-    if (!reviewId)
-      return res.status(400).json({ message: "Review ID is required" });
-
-    const product = await Product.findById(id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    const reviewIndex = product.reviews.findIndex(
-      (r) => r._id.toString() === reviewId
-    );
-    if (reviewIndex === -1)
-      return res.status(404).json({ message: "Review not found" });
-
-    product.reviews.splice(reviewIndex, 1);
-
-    if (product.reviews.length > 0) {
-      const totalRating = product.reviews.reduce(
-        (sum, review) => sum + review.rating,
-        0
-      );
-      product.rating = (totalRating / product.reviews.length).toFixed(1);
-    } else {
-      product.rating = 0;
-    }
-
-    await product.save();
-    res.json({ message: "Review deleted successfully", product });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }

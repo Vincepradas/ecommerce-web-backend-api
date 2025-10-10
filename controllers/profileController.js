@@ -13,6 +13,8 @@ exports.getInformation = async (req, res) => {
             email: user.email,
             role: user.role,
             address: [user.addresses],
+            viewedProducts: [user.viewedProducts],
+            purchasedProducts: [user.purchasedProducts]
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
