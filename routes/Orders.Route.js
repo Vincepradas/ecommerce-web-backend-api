@@ -7,7 +7,7 @@ const {
   updateOrderStatus, 
   getAllOrders, 
   directCheckout 
-} = require('../controllers/orderController');
+} = require('../controllers/Order.Controller');
 const authMiddleware = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 const router = express.Router();

@@ -1,4 +1,4 @@
-const { addReview, getAllReviews, getReviewsByProduct, getReviewsByUser, getReviewById } = require("../controllers/reviewsController");
+const { addReview, getAllReviews, getReviewsByProduct, getReviewsByUser, getReviewById } = require("../controllers/Reviews.Controller");
 const authMiddleware = require('../middleware/authMiddleware');
 const express = require('express');
 
