@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-    getAllProducts,
+    getProducts,
     addProduct,
     searchProductsByName,
     getProductById,
@@ -17,9 +17,7 @@ const isAdmin = require('../middleware/isAdmin');
 const router = express.Router();
 
 // Product routes
-router.get('/', getAllProducts);
-router.get('/:id', getProductById);
-router.get('/search', searchProductsByName);
+router.get('/', getProducts);
 router.post('/', authMiddleware, isAdmin, addProduct);
 router.put('/:id', authMiddleware, isAdmin, updateProduct);
 router.delete('/:id', authMiddleware, isAdmin, deleteProduct);
