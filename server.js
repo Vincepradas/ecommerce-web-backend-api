@@ -8,6 +8,7 @@ const cartRoutes = require('./routes/cart');
 const paymentRoutes = require('./routes/payments');
 const userRoutes = require('./routes/profile');
 const vendorProducts = require('./routes/vendor');
+const reviews = require('./routes/reviews');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -49,7 +50,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/vendorproducts', vendorProducts);
-
+app.use('/api/reviews', reviews);
 
 // Start server
 const PORT = process.env.PORT || 5000;

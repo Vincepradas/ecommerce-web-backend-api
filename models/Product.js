@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
+const MediaSchema = require("./Schema/MediaSchema");
 
-// Media schema
-const MediaSchema = new mongoose.Schema({
-  url: { type: String, required: true },
-  key: { type: String, required: true },
-  uploadedAt: { type: Date, default: Date.now },
-});
 
 //Thumbnail schema
 const Thumbnail = new mongoose.Schema({
@@ -26,15 +21,7 @@ const productSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     stock: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
-    reviews: [
-      {
-        rating: { type: Number, required: false, min: 1, max: 5 },
-        comment: { type: String, required: false },
-        date: { type: Date, default: () => new Date() },
-        reviewerName: { type: String, required: false },
-        reviewerEmail: { type: String, required: false },
-      },
-    ],
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
     media: [MediaSchema],
     thumbnail: Thumbnail,
     viewCount: { type: Number, default: 0 },
