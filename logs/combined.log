@@ -361,3 +361,44 @@
 {"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:32:44"}
 {"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:32:44"}
 {"level":"http","message":"[Product Route] GET /api/products","timestamp":"2025-10-11 17:32:52"}
+{"level":"http","message":"[Product Route] GET /api/products","timestamp":"2025-10-11 17:38:36"}
+{"level":"http","message":"[Product Route] GET /api/products","timestamp":"2025-10-11 17:38:36"}
+{"level":"http","message":"[Reviews Route] GET /api/reviews/product/6749d310a86aeb9712253d9f","timestamp":"2025-10-11 17:38:37"}
+{"level":"http","message":"[Product Route] GET /api/products?id=6749d310a86aeb9712253d9f","timestamp":"2025-10-11 17:38:37"}
+{"level":"http","message":"[Reviews Route] GET /api/reviews/product/6749d310a86aeb9712253d9f","timestamp":"2025-10-11 17:38:38"}
+{"level":"http","message":"[User Route] GET /api/user/","timestamp":"2025-10-11 17:38:39"}
+{"level":"http","message":"[User Route] GET /api/user/","timestamp":"2025-10-11 17:38:39"}
+{"level":"http","message":"[Order Route] POST /api/orders by Guest","timestamp":"2025-10-11 17:38:46"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:38:47"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:38:47"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:39:18"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:39:48"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:40:18"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:40:48"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:41:18"}
+{"level":"http","message":"[Order Route] GET /api/orders by Guest","timestamp":"2025-10-11 17:41:48"}
+{"level":"http","message":"[Product Route] GET /api/products","timestamp":"2025-10-11 20:30:54"}
+{"level":"http","message":"[Cart Route] GET /api/cart","timestamp":"2025-10-11 20:31:16"}
+{"level":"http","message":"[Reviews Route] GET /api/reviews","timestamp":"2025-10-11 20:32:58"}
+{"level":"http","message":"[Reviews Route] GET /api/reviews/68e8694e3ebf9d002e208f52","timestamp":"2025-10-11 20:33:03"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/68e8694e3ebf9d002e208f52","timestamp":"2025-10-11 20:33:33"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:34:10"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:36:12"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:36:40"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:36:52"}
+{"level":"http","message":"[Product Route] GET /api/products?id=6749d310a86aeb9712253d9f","timestamp":"2025-10-11 20:37:36"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:39:57"}
+{"level":"http","message":"[Product Route] GET /api/products?id=6749d310a86aeb9712253d9f","timestamp":"2025-10-11 20:40:13"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:41:06"}
+{"level":"http","message":"[User Route] GET /api/user","timestamp":"2025-10-11 20:45:18"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:49:17"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:49:49"}
+{"level":"http","message":"[Product Route] GET /api/products","timestamp":"2025-10-11 20:49:59"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:51:39"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:56:23"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:56:50"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:57:08"}
+{"level":"http","message":"[Product Route] GET /api/products","timestamp":"2025-10-11 20:57:29"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:57:58"}
+{"level":"http","message":"[Reviews Route] POST /api/reviews/add","timestamp":"2025-10-11 20:58:04"}
+{"level":"http","message":"[Product Route] GET /api/products?id=6749d310a86aeb9712253d9f","timestamp":"2025-10-11 20:58:14"}

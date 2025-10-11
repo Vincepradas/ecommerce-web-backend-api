@@ -1,5 +1,6 @@
 const Review = require("../models/Reviews");
 const Product = require("../models/Product");
+const mongoose = require("mongoose");
 
 exports.addReview = async (req, res) => {
   try {
@@ -13,8 +14,15 @@ exports.addReview = async (req, res) => {
     const avgRating =
       reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
-    await Product.findByIdAndUpdate(productId, { rating: avgRating });
-
+    const objectId = new mongoose.Types.ObjectId(productId);
+    await Product.findByIdAndUpdate(
+      objectId,
+      {
+        $inc: { reviewCount: 1 },
+        $set: { rating: avgRating },
+      },
+      { new: true, useFindAndModify: false }
+    );
     res.status(201).json(review);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -37,7 +45,7 @@ exports.getReviewsByProduct = async (req, res) => {
     const { productId } = req.params;
     const reviews = await Review.find({ productId })
       .populate("userId", "name")
-      .sort({ date: -1 }); 
+      .sort({ date: -1 });
     res.status(200).json(reviews);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -68,4 +76,3 @@ exports.getReviewById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
