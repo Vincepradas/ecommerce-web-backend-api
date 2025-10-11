@@ -11,7 +11,7 @@ exports.createPaymentIntent = async (req, res) => {
       {
         data: {
           attributes: {
-            amount: amount * 100, // Amount in cents
+            amount: amount * 100, 
             payment_method_allowed: ['gcash'],
             payment_method_options: { gcash: {} },
             currency: currency || 'PHP',
