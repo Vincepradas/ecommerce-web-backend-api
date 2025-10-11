@@ -4,7 +4,6 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
-// All orders (ADMIN)
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -38,8 +37,6 @@ exports.getAllOrders = async (req, res) => {
   }
 };
 
-// Create order
-// Create order
 exports.createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -68,7 +65,6 @@ exports.createOrder = async (req, res) => {
     let totalAmount = 0;
     const productUpdates = [];
 
-    // Process each product in the order
     for (const item of products) {
       const product = await Product.findById(item.productId).session(session);
       if (!product) {
@@ -87,21 +83,17 @@ exports.createOrder = async (req, res) => {
           .json({ message: `Insufficient stock for ${product.name}` });
       }
 
-      // Calculate discounted price
       const discount = product.discountPercentage || 0;
       const discountedPrice = product.price - product.price * (discount / 100);
       totalAmount += discountedPrice * item.quantity;
 
-      // Update stock and purchase count within the same operation
       product.stock -= item.quantity;
-      product.purchaseCount += 1; // Add purchase count here, inside the transaction
+      product.purchaseCount += 1;
       productUpdates.push(product.save({ session }));
     }
 
-    // Wait for all product updates to complete
     await Promise.all(productUpdates);
 
-    // Create the order
     const order = new Order({
       user: req.user._id,
       paymentMethod,
@@ -124,14 +116,11 @@ exports.createOrder = async (req, res) => {
       deliveredAt: null,
     });
 
-    // Save order within the transaction
     await order.save({ session });
 
-    // Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Update user's purchased products (this can be outside the transaction since it's not critical for order creation)
     try {
       const token =
         req.headers.authorization?.split(" ")[1] || req.cookies.authToken;
@@ -160,7 +149,6 @@ exports.createOrder = async (req, res) => {
       }
     } catch (userError) {
       console.error("Error updating user purchased products:", userError);
-      // Don't fail the order if user update fails
     }
 
     res.status(201).json(order);
@@ -172,7 +160,6 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// Get a single order by ID
 exports.getOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate(
@@ -186,32 +173,31 @@ exports.getOrder = async (req, res) => {
   }
 };
 
-// Get all orders for the CURRENT USER only
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }) 
-      .populate('user', 'name email')
-      .populate('products.productId', 'name price thumbnail'); // <-- include thumbnail
+    const orders = await Order.find({ user: req.user._id })
+      .populate("user", "name email")
+      .populate("products.productId", "name price thumbnail");
 
-    const orderResponse = orders.map(order => ({
+    const orderResponse = orders.map((order) => ({
       id: order._id,
       user: {
         name: order.user.name,
-        email: order.user.email
+        email: order.user.email,
       },
-      products: order.products.map(product => ({
+      products: order.products.map((product) => ({
         productId: product.productId._id,
         name: product.productId.name,
         price: product.productId.price,
         quantity: product.quantity,
-        thumbnail: product.productId.thumbnail?.url || null // <-- include thumbnail URL
+        thumbnail: product.productId.thumbnail?.url || null,
       })),
       totalAmount: order.totalAmount,
       paymentMethod: order.paymentMethod,
       address: order.address,
       status: order.status,
       createdAt: order.createdAt,
-      isCanceled: order.isCanceled
+      isCanceled: order.isCanceled,
     }));
 
     res.status(200).json(orderResponse);
@@ -221,8 +207,6 @@ exports.getUserOrders = async (req, res) => {
   }
 };
 
-
-// Cancel/Delete order
 exports.cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -247,19 +231,16 @@ exports.cancelOrder = async (req, res) => {
   }
 };
 
-// Update order status
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-    // Find the order by ID
     const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Validate the new status
     const validStatuses = ["pending", "completed", "shipped", "cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
@@ -277,7 +258,6 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// Direct Checkout
 exports.directCheckout = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -289,7 +269,6 @@ exports.directCheckout = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Fetch the product to check availability
     const product = await Product.findById(productId).session(session);
     if (!product) {
       await session.abortTransaction();
@@ -303,16 +282,13 @@ exports.directCheckout = async (req, res) => {
       return res.status(400).json({ message: "Insufficient stock" });
     }
 
-    // Calculate total price after discount
     const discount = product.discountPercentage || 0;
     const discountedPrice = product.price - product.price * (discount / 100);
     const totalAmount = discountedPrice * quantity;
 
-    // Update stock
     product.stock -= quantity;
     await product.save({ session });
 
-    // Create order
     const order = new Order({
       user: req.user._id,
       paymentMethod,
