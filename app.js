@@ -18,12 +18,30 @@ const viewLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
   max: 1,
   message: "Same IP detected.",
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 app.post("/api/visit", viewLimiter, async (req, res) => {
-  await ViewCount.updateOne({}, { $inc: { count: 1 } }, { upsert: true });
-  const data = await ViewCount.findOne();
-  res.status(200).json(data);
+  try {
+    const result = await ViewCount.findOneAndUpdate(
+      {},
+      { $inc: { count: 1 } },
+      { upsert: true, new: true } 
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update visit count" });
+  }
+});
+
+app.get("/api/visit", async (req, res) => {
+  try {
+    const data = await ViewCount.findOne();
+    res.status(200).json(data || { count: 0 });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch visit count" });
+  }
 });
 
 app.use(cors(corsOptions));
