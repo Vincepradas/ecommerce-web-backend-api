@@ -22,6 +22,22 @@ const viewLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    },
+  })
+);
+
 app.post("/api/visit", viewLimiter, async (req, res) => {
   try {
     const result = await ViewCount.findOneAndUpdate(
@@ -44,20 +60,6 @@ app.get("/api/visit", async (req, res) => {
   }
 });
 
-app.use(cors(corsOptions));
-app.use(cookieParser());
-app.use(express.json());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-    },
-  })
-);
 app.use("/api", routes);
 
 module.exports = app;
