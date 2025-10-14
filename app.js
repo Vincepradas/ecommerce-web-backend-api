@@ -22,8 +22,10 @@ const viewLimiter = rateLimit({
 
 app.post("/api/visit", viewLimiter, async (req, res) => {
   await ViewCount.updateOne({}, { $inc: { count: 1 } }, { upsert: true });
-  res.sendStatus(200);
+  const data = await ViewCount.findOne();
+  res.status(200).json(data);
 });
+
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
