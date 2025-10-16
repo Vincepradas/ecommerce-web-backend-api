@@ -9,8 +9,7 @@
     "array-flatten": "^1.1.1",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.7.7",
-    "bcrypt": "^6.0.0",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "bson": "^6.9.0",
     "bytes": "^3.1.2",
@@ -117,7 +116,6 @@
   },
   "homepage": "https://github.com/VincePradas/ecommerce-web-backend#readme",
   "devDependencies": {
-    "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
