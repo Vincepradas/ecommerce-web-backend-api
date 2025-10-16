@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "tsc-build",
+			"type": "shell",
+			"command": "npx tsc -p tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dev-server",
+			"type": "shell",
+			"command": "npx ts-node-dev --respawn --transpile-only src/server.ts",
+			"isBackground": true,
+			"group": "build"
+		}
+	]
+}
